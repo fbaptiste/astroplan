@@ -2,6 +2,7 @@ from math import pi
 import numpy as np
 
 # App Settings
+settings_file = "./astroplan.ini"
 
 # Stellarium data
 stellarium_field_count = 45

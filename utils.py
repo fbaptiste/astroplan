@@ -2,6 +2,14 @@
 import numpy as np
 import constants
 from math import pi
+import os
+import shutil
+
+
+def create_dir(path: str, delete_if_exists=True):
+    if os.path.exists(path) and delete_if_exists:
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
 
 
 def calc_sunset(t, dt, alt, loni, r23, r01):

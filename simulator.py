@@ -13,7 +13,7 @@ def dso(
         horizon_data,
         stellarium_row_data,
         csv_dso_list,
-        min_observation_hours,
+        min_obs_hours,
         min_obs_peak_altitude,
         min_obs_altitude,
         results_folder,
@@ -103,7 +103,7 @@ def dso(
                 constants.r_01
             )
 
-    if max(hist[:, 2]) < min_obs_peak_altitude or max(hist[:, 3]) < min_observation_hours:
+    if max(hist[:, 2]) < min_obs_peak_altitude or max(hist[:, 3]) < min_obs_hours:
         return 0  # Cannot see DSO (not high enough and/or not visible for long enough
 
     # Find first day when imaging score is maximum
