@@ -1,9 +1,11 @@
 """Various calculators and helper functions"""
-import numpy as np
-import constants
-from math import pi
 import os
 import shutil
+from math import pi
+
+import numpy as np
+
+import constants
 
 
 def create_dir(path: str, delete_if_exists=True):
@@ -123,4 +125,6 @@ def catalog_info(stellarium_row_data):
         is_galaxy = None
 
     return catalog_name, is_galaxy
+
+
 

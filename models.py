@@ -23,6 +23,6 @@ UserSettings = namedtuple(
 
         "local_catalog_file",
         "dso_list_file",
-        "r23",
+        "r_23",
     ]
 )

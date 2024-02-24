@@ -36,7 +36,7 @@ def read_settings(file: str = settings_file) -> UserSettings:
     local_catalog_file = f"{results_path}/local_catalog_{min_catalog_id}-{max_catalog_id}.txt"
     dso_list_file = f"{results_path}/DSO_list_{min_catalog_id}-{max_catalog_id}.csv"
 
-    r23 = np.array([
+    r_23 = np.array([
         [1.0, 0.0, 0.0],
         [0.0, np.cos(observer_latitude_radians), np.sin(observer_latitude_radians)],
         [0.0, -np.sin(observer_latitude_radians), np.cos(observer_latitude_radians)]
@@ -65,7 +65,7 @@ def read_settings(file: str = settings_file) -> UserSettings:
         local_catalog_file=local_catalog_file,
         dso_list_file=dso_list_file,
 
-        r23=r23,
+        r_23=r_23,
     )
 
     create_dir(settings.results_path, settings.clear_results_before_running)

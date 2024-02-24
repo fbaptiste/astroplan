@@ -1,4 +1,6 @@
+"""Various Constants"""
 from math import pi
+
 import numpy as np
 
 # App Settings
