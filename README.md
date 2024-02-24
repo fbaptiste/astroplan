@@ -21,11 +21,12 @@ Run configurations (such as observer's latitude, etc) are configured using an `.
 
 By default, the system will look for `astroplan.ini` in your app's directory, but you can override this when 
 starting the app to use any other `.ini` file - this allows you to keep multiple configuration profiles and 
-run AstroPlan based on whatever config you want.
+run AstroPlan based on whatever config you want. For example you could use this to store configurations for different
+observation locations, object sizes, catalog subsets, etc.
 
 To do so, use the command line switch `-i` or `--ini`, for example:
 ```bash
-python astroplan.py --ini astroplan2.ini
+python astroplan.py --ini astroplan_full.ini
 ```
 
 These `.ini` files look like this:
