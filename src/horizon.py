@@ -1,13 +1,14 @@
 """Horizon"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 
-from models import UserSettings
+from src.models import UserSettings
 
 
 def load_data(user: UserSettings):
-    return np.loadtxt(user.horizon_file, dtype='float', comments='#', delimiter=None, skiprows=0)
+    return np.loadtxt(user.horizon_file, dtype="float", comments="#", delimiter=None, skiprows=0)
 
 
 def plot_data(horizon_data, user: UserSettings):
@@ -22,8 +23,8 @@ def plot_data(horizon_data, user: UserSettings):
     plt.title("Local Horizon", fontsize=16)
     axes.xaxis.set_minor_locator(MultipleLocator(10))
     axes.yaxis.set_minor_locator(MultipleLocator(5))
-    plt.grid(visible=None, which='both', axis='both', linestyle=':', linewidth=1)
+    plt.grid(visible=None, which="both", axis="both", linestyle=":", linewidth=1)
     plt.xlabel("Azimuth (deg)", fontsize=12)
     plt.ylabel("Altitude (deg)", fontsize=12)
-    plt.savefig(out_file, format='png')
+    plt.savefig(out_file, format="png")
     plt.close()

@@ -1,8 +1,7 @@
 import numpy as np
 
-import constants
-import utils
-from models import SimResult, UserSettings
+from src import constants, utils
+from src.models import SimResult, UserSettings
 
 
 def run_dso(
@@ -14,13 +13,13 @@ def run_dso(
     object_dec_radians,
     object_size,
     horizon_data,
-    user: UserSettings
+    user: UserSettings,
 ) -> SimResult:
     # Initialize internal data
     observer_longitude_radians = user.observer_longitude_radians
-    min_obs_hours = user.min_obs_hours,
-    min_obs_peak_altitude = user.min_obs_peak_altitude,
-    min_obs_altitude = user.min_obs_altitude,
+    min_obs_hours = (user.min_obs_hours,)
+    min_obs_peak_altitude = (user.min_obs_peak_altitude,)
+    min_obs_altitude = (user.min_obs_altitude,)
     r_23 = user.r_23
     month = 0
     time_series = np.zeros(shape=(constants.days_in_year, 5))
@@ -48,7 +47,9 @@ def run_dso(
     # Begin year-long simulation
     while day < constants.days_in_year:  # Analysis starts at first dark on first day of the year
         if sun_altitude < -12.0:
-            dalt, daz = utils.convert_ra_dec_to_alt_az(t, observer_longitude_radians, object_ra_radians, object_dec_radians, r_23)
+            dalt, daz = utils.convert_ra_dec_to_alt_az(
+                t, observer_longitude_radians, object_ra_radians, object_dec_radians, r_23
+            )
             horizon_altitude = np.interp(daz, horizon_data[:, 0], horizon_data[:, 1])
             if dalt > max(min_obs_altitude, horizon_altitude):
                 time_visible += constants.simulation_delta_t_hours
@@ -62,20 +63,18 @@ def run_dso(
             if month == 0:
                 damo = float(month + 1) + (float(day) / float(constants.month_last_day[month]))
             else:
-                damo = (
-                        float(month + 1) +
-                        float(day - constants.month_last_day[month - 1]) /
-                        float(constants.month_last_day[month] - constants.month_last_day[month - 1])
+                damo = float(month + 1) + float(day - constants.month_last_day[month - 1]) / float(
+                    constants.month_last_day[month] - constants.month_last_day[month - 1]
                 )
             if min_altitude > 95.0:
                 min_altitude = 0.0
             time_series[day, 0:5] = np.array([damo, min_altitude, max_altitude, time_visible, score])
             if day > 1:
                 # Perform moving average to smooth out curves
-                time_series[day - 1, 1] = np.mean(time_series[day - 2:day + 1, 1])
-                time_series[day - 1, 2] = np.mean(time_series[day - 2:day + 1, 2])
-                time_series[day - 1, 3] = np.mean(time_series[day - 2:day + 1, 3])
-                time_series[day - 1, 4] = np.mean(time_series[day - 2:day + 1, 4])
+                time_series[day - 1, 1] = np.mean(time_series[day - 2 : day + 1, 1])
+                time_series[day - 1, 2] = np.mean(time_series[day - 2 : day + 1, 2])
+                time_series[day - 1, 3] = np.mean(time_series[day - 2 : day + 1, 3])
+                time_series[day - 1, 4] = np.mean(time_series[day - 2 : day + 1, 4])
             min_altitude = 100.0  # Initialize single-night observation variables
             max_altitude = 0.0
             score = 0.0
@@ -86,12 +85,7 @@ def run_dso(
 
             # fast-forward through daylight to sunset
             t, sun_altitude, n1 = utils.calc_sunset(
-                t,
-                constants.simulation_delta_t_hours,
-                sun_altitude,
-                observer_longitude_radians,
-                r_23,
-                constants.r_01
+                t, constants.simulation_delta_t_hours, sun_altitude, observer_longitude_radians, r_23, constants.r_01
             )
 
     if max(time_series[:, 2]) < min_obs_peak_altitude or max(time_series[:, 3]) < min_obs_hours:
@@ -111,7 +105,7 @@ def run_dso(
         max_score=max_score,
         max_month=max_month,
         max_day=max_day,
-        time_series=time_series
+        time_series=time_series,
     )
 
 

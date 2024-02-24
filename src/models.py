@@ -1,7 +1,9 @@
 """Various data structures"""
-from functools import cached_property
+
 from dataclasses import dataclass
+from functools import cached_property
 from math import pi
+from pathlib import Path
 from typing import NamedTuple
 
 import numpy as np
@@ -9,10 +11,11 @@ import numpy as np
 
 @dataclass
 class UserSettings:
-    ini_file: str
+    root_path: Path
+    ini_file: Path
     observer_latitude: float
     observer_longitude: float
-    horizon_file: str
+    horizon_file: Path
     min_obs_hours: float
     min_obs_peak_altitude: float
     min_obs_altitude: float
@@ -20,7 +23,7 @@ class UserSettings:
     catalog_file: str
     min_catalog_id: int
     max_catalog_id: int | None
-    results_path: str
+    results_path: Path
     clear_results_before_running: bool
     _max_catalog_id: int = None
 
@@ -48,11 +51,13 @@ class UserSettings:
 
     @cached_property
     def r_23(self) -> np.ndarray:
-        return np.array([
-            [1.0, 0.0, 0.0],
-            [0.0, np.cos(self.observer_latitude_radians), np.sin(self.observer_latitude_radians)],
-            [0.0, -np.sin(self.observer_latitude_radians), np.cos(self.observer_latitude_radians)]
-        ])
+        return np.array(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, np.cos(self.observer_latitude_radians), np.sin(self.observer_latitude_radians)],
+                [0.0, -np.sin(self.observer_latitude_radians), np.cos(self.observer_latitude_radians)],
+            ]
+        )
 
     @cached_property
     def local_catalog_file(self) -> str:
@@ -92,4 +97,4 @@ class SimResult(NamedTuple):
 
     @classmethod
     def csv_row_headers(cls):
-        return 'No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day'
+        return "No.", "Name", "RA (deg)", "DEC (deg)", "Type", "Size", "Score", "Month", "Day"

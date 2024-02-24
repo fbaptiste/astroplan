@@ -1,31 +1,33 @@
 """Various calculators and helper functions"""
+
 import os
+import pathlib
 import shutil
 from math import pi
 from time import perf_counter
 
 import numpy as np
 
-import constants
+from src import constants
 
 
-def create_dir(path: str, delete_if_exists=True):
+def create_dir(path: pathlib.Path, delete_if_exists=True):
     if os.path.exists(path) and delete_if_exists:
         shutil.rmtree(path)
     os.makedirs(path, exist_ok=True)
 
 
 def calc_sunset(t, dt, alt, loni, r23, r01):
-    f = 7.0/dt
+    f = 7.0 / dt
     n = 0
     while alt > -12.0 or alt < -12.05:
         if alt > -12.0:
             if f < 0.0:
-                f = -f/2.0
+                f = -f / 2.0
         if alt < -12.05:
             if f > 0.0:
-                f = -f/2.0
-        t += f*dt
+                f = -f / 2.0
+        t += f * dt
         alt = calc_sun_altitude(t, loni, r23, r01)
         n += 1
     t += dt
@@ -36,30 +38,12 @@ def calc_sunset(t, dt, alt, loni, r23, r01):
 def convert_ra_dec_to_alt_az(t, lon, ra, dec, r_23):
     r_12 = np.array(
         [
-            [
-                np.cos(constants.earth_rotation_rate * t + lon),
-                np.sin(constants.earth_rotation_rate * t + lon),
-                0.0
-            ],
-            [
-                -np.sin(constants.earth_rotation_rate * t + lon),
-                np.cos(constants.earth_rotation_rate * t + lon),
-                0.0
-            ],
-            [
-                0.0,
-                0.0,
-                1.0
-            ]
+            [np.cos(constants.earth_rotation_rate * t + lon), np.sin(constants.earth_rotation_rate * t + lon), 0.0],
+            [-np.sin(constants.earth_rotation_rate * t + lon), np.cos(constants.earth_rotation_rate * t + lon), 0.0],
+            [0.0, 0.0, 1.0],
         ]
     )
-    r_ts = np.array(
-        [
-            [-np.sin(ra) * np.cos(dec)],
-            [np.cos(ra) * np.cos(dec)],
-            [np.sin(dec)]
-        ]
-    )
+    r_ts = np.array([[-np.sin(ra) * np.cos(dec)], [np.cos(ra) * np.cos(dec)], [np.sin(dec)]])
     r_tp = r_23 @ r_12 @ r_ts  # vector from observation location to DSO
     north = r_tp[2, 0]
     west = r_tp[0, 0]
@@ -69,37 +53,22 @@ def convert_ra_dec_to_alt_az(t, lon, ra, dec, r_23):
         az += 360.0
     if az > 360.0:
         az -= 360.0
-    alt = np.arctan2(up, np.sqrt(north ** 2 + west ** 2)) * 180.0 / pi
+    alt = np.arctan2(up, np.sqrt(north**2 + west**2)) * 180.0 / pi
     return alt, az
 
 
 def calc_sun_altitude(t, lon, r_23, r_01):
     r_12 = np.array(
         [
-            [
-                np.cos(constants.earth_rotation_rate * t + lon),
-                np.sin(constants.earth_rotation_rate * t + lon),
-                0.0
-            ],
-            [
-                -np.sin(constants.earth_rotation_rate * t + lon),
-                np.cos(constants.earth_rotation_rate * t + lon),
-                0.0
-            ],
-            [
-                0.0,
-                0.0,
-                1.0
-            ]
+            [np.cos(constants.earth_rotation_rate * t + lon), np.sin(constants.earth_rotation_rate * t + lon), 0.0],
+            [-np.sin(constants.earth_rotation_rate * t + lon), np.cos(constants.earth_rotation_rate * t + lon), 0.0],
+            [0.0, 0.0, 1.0],
         ]
     )
 
     r_es = np.array(
-        [
-            [np.sin(constants.earth_solar_orbital_rate * t)],
-            [-np.cos(constants.earth_solar_orbital_rate * t)],
-            [0.0]
-        ])
+        [[np.sin(constants.earth_solar_orbital_rate * t)], [-np.cos(constants.earth_solar_orbital_rate * t)], [0.0]]
+    )
 
     r_sp = -r_23 @ r_12 @ r_01 @ r_es  # vector from observation location to Sun
     x = np.sqrt(r_sp[0, 0] ** 2 + r_sp[2, 0] ** 2)
@@ -112,7 +81,7 @@ def catalog_info(stellarium_row_data):
     catalog_name = None
     for catalog_prefix, column_index in constants.catalogs.items():
         catalog_number = stellarium_row_data[column_index]
-        if catalog_number and catalog_number != '0':
+        if catalog_number and catalog_number != "0":
             catalog_name = f"{catalog_prefix}_{catalog_number}"
             break
 
@@ -132,3 +101,7 @@ def print_elapsed_time(name, start_time):
     end_time = perf_counter()
     print(f"{name}: {(end_time - start_time):.2f} s")
 
+
+def run_root() -> pathlib.Path:
+    curr_path = pathlib.Path(__file__)
+    return curr_path.parent.parent.absolute()

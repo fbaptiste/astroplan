@@ -1,4 +1,5 @@
 """Various Constants"""
+
 from math import pi
 
 import numpy as np
@@ -18,18 +19,7 @@ included_dso_types_galaxies = {
     "ClG",
     "SAB(s)c",
 }
-included_dso_types_nebulas = {
-    "NB",
-    "PN",
-    "DN",
-    "RN",
-    "C+N",
-    "HII",
-    "SNR",
-    "BN",
-    "EN",
-    "GNe"
-}
+included_dso_types_nebulas = {"NB", "PN", "DN", "RN", "C+N", "HII", "SNR", "BN", "EN", "GNe"}
 included_dso_types = included_dso_types_galaxies | included_dso_types_nebulas
 
 catalogs = {
@@ -49,12 +39,10 @@ earth_solar_orbital_rate = 2 * pi / hours_in_year  # Earth's orbital rate around
 days_in_year = 365  # Number of days in a year
 month_last_day = [31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365, 396]
 
-r_01 = np.array([
-    [np.cos(earth_tilt), 0.0, -np.sin(earth_tilt)],
-    [0.0, 1.0, 0.0],
-    [np.sin(earth_tilt), 0.0, np.cos(earth_tilt)]
-])
+r_01 = np.array(
+    [[np.cos(earth_tilt), 0.0, -np.sin(earth_tilt)], [0.0, 1.0, 0.0], [np.sin(earth_tilt), 0.0, np.cos(earth_tilt)]]
+)
 
 
 # Constants associated with simulation
-simulation_delta_t_hours = 7.0/60.0  # Simulation time step in hours
+simulation_delta_t_hours = 7.0 / 60.0  # Simulation time step in hours

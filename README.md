@@ -12,7 +12,7 @@ Fork of James Lamb's Python AstroPlan
 - All distances are small compared with distance to a DSO
 
 ## Where to get the latest Stellarium DSO Catalog
-It is available in text format on their [github repo](https://github.com/Stellarium/stellarium/tree/master).
+It is available in text format on their [GitHub repo](https://github.com/Stellarium/stellarium/tree/master).
 
 Specifically the file is [here](https://github.com/Stellarium/stellarium/blob/master/nebulae/default/catalog.txt).
 
@@ -83,4 +83,26 @@ Starting...
 		- Horizon plot: 0.09 s
 		- Global plots: 0.36 s
 Completed: 175.41 s
+```
+
+## Development
+Python `black` and `isort` are configured for this project.
+
+These tools simply reformat Python code uniformly (following PEP8 standards).
+
+The `isort` tool organizes and sorts the import statements in modules, while the `black` tool reformats
+a variety of things like indentations, quotes, etc.
+
+If you are on a *nix machine, simply use the Make command: 
+```bash
+make lint-fix
+```
+
+On Windows, you can instead run this from a prompt: 
+```commandline
+ isort .
+ ``` 
+ followed by 
+ ```commandline
+ black .
 ```
