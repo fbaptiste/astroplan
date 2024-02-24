@@ -1,147 +1,202 @@
-
 import math
 import os.path
 import csv
 import numpy as np
-import orbit as orb
+
+import constants
+import simulator
 import matplotlib.pyplot as plt
-from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
-                               AutoMinorLocator)
+from matplotlib.ticker import MultipleLocator
+from time import perf_counter
+
+start_counter = perf_counter()
 
 pi = math.pi
-lat = 0.0
-lon = 0.0
-hrLim = 4.0
-altLim = 30.0
-altMin = 15.0
-min_size = 10.0
-nMin = 1
-nMax = 2000
+observer_latitude = 0.0
+observer_longitude = 0.0
+min_observation_hours = 4.0
+min_obs_peak_altitude = 30.0
+min_obs_altitude = 15.0
+min_dso_size = 10.0
+min_catalog_id = 1
+max_catalog_id = 2000
 horizon_file = "--Enter Filename--"
 if os.path.isfile("astroplan.ini"):
     fp = open("astroplan.ini", "r")
-    lat = float(fp.readline().rstrip('\n'))
-    lon = float(fp.readline().rstrip('\n'))
+    observer_latitude = float(fp.readline().rstrip('\n'))
+    observer_longitude = float(fp.readline().rstrip('\n'))
     horizon_file = fp.readline().rstrip('\n')
-    hrLim = float(fp.readline().rstrip('\n'))
-    altLim = float(fp.readline().rstrip('\n'))
-    altMin = float(fp.readline().rstrip('\n'))
-    min_size = float(fp.readline().rstrip('\n'))
-    nMin = int(fp.readline().rstrip('\n'))
-    nMax = int(fp.readline().rstrip('\n'))
+    min_observation_hours = float(fp.readline().rstrip('\n'))
+    min_obs_peak_altitude = float(fp.readline().rstrip('\n'))
+    min_obs_altitude = float(fp.readline().rstrip('\n'))
+    min_dso_size = float(fp.readline().rstrip('\n'))
+    min_catalog_id = int(fp.readline().rstrip('\n'))
+    max_catalog_id = int(fp.readline().rstrip('\n'))
     fp.close()
-lat = float(input("Enter Latitude  ["+str(round(lat, 6))+"]: ") or round(lat, 6))
-lon = float(input("Enter Longitude ["+str(round(lon, 6))+"]: ") or round(lon, 6))
-horizon_file = input("Enter Local Horizon Filename ["+horizon_file+"]: ") or horizon_file
-if not os.path.isfile(horizon_file):
-    while not os.path.isfile(horizon_file):
-        print("User-defined horizon file ["+horizon_file+"] not found")
-        horizon_file = input("Enter Local Horizon Filename [" + horizon_file + "]: ") or horizon_file
-hrLim = float(input("Enter Minimum Observation Time  ["+str(round(hrLim, 1))+"]: ") or round(hrLim, 1))
-altLim = float(input("Enter Minimum Peak Altitude  ["+str(round(altLim, 1))+"]: ") or round(altLim, 1))
-altMin = float(input("Enter Minimum Observation Altitude  [" + str(round(altMin, 1)) + "]: ") or round(altMin, 1))
-min_size = float(input("Enter Minimum DSO Size  [" + str(round(min_size, 1)) + "]: ") or round(min_size, 1))
-nMin = int(input("Enter Lowest Catalog Number  [" + str(int(nMin)) + "]: ") or int(nMin))
-nMax = int(input("Enter Highest Catalog Number  [" + str(int(nMax)) + "]: ") or int(nMax))
+
+# Get User inputs
+# observer_latitude = float(
+#     input("Enter Latitude  [" + str(round(observer_latitude, 6)) + "]: ") or round(observer_latitude, 6))
+# observer_longitude = float(
+#     input("Enter Longitude [" + str(round(observer_longitude, 6)) + "]: ") or round(observer_longitude, 6))
+# horizon_file = input("Enter Local Horizon Filename [" + horizon_file + "]: ") or horizon_file
+# if not os.path.isfile(horizon_file):
+#     while not os.path.isfile(horizon_file):
+#         print("User-defined horizon file [" + horizon_file + "] not found")
+#         horizon_file = input("Enter Local Horizon Filename [" + horizon_file + "]: ") or horizon_file
+# min_observation_hours = float(
+#     input("Enter Minimum Observation Time  [" + str(round(min_observation_hours, 1)) + "]: ") or round(
+#         min_observation_hours, 1))
+# min_obs_peak_altitude = float(
+#     input("Enter Minimum Peak Altitude  [" + str(round(min_obs_peak_altitude, 1)) + "]: ") or round(
+#         min_obs_peak_altitude, 1))
+# min_obs_altitude = float(
+#     input("Enter Minimum Observation Altitude  [" + str(round(min_obs_altitude, 1)) + "]: ") or round(min_obs_altitude,
+#                                                                                                       1))
+# min_dso_size = float(input("Enter Minimum DSO Size  [" + str(round(min_dso_size, 1)) + "]: ") or round(min_dso_size, 1))
+# min_catalog_id = int(input("Enter Lowest Catalog ID  [" + str(int(min_catalog_id)) + "]: ") or int(min_catalog_id))
+# max_catalog_id = int(input("Enter Highest Catalog ID  [" + str(int(max_catalog_id)) + "]: ") or int(max_catalog_id))
+
 # ---------------------------------
 fp = open("astroplan.ini", "w")
-fp.write(str(round(lat, 6))+'\n')
-fp.write(str(round(lon, 6))+'\n')
-fp.write(horizon_file+'\n')
-fp.write(str(round(hrLim, 1))+'\n')
-fp.write(str(round(altLim, 1))+'\n')
-fp.write(str(round(altMin, 1))+'\n')
-fp.write(str(round(min_size, 1))+'\n')
-fp.write(str(int(nMin))+'\n')
-fp.write(str(int(nMax))+'\n')
+fp.write(str(round(observer_latitude, 6)) + '\n')
+fp.write(str(round(observer_longitude, 6)) + '\n')
+fp.write(horizon_file + '\n')
+fp.write(str(round(min_observation_hours, 1)) + '\n')
+fp.write(str(round(min_obs_peak_altitude, 1)) + '\n')
+fp.write(str(round(min_obs_altitude, 1)) + '\n')
+fp.write(str(round(min_dso_size, 1)) + '\n')
+fp.write(str(int(min_catalog_id)) + '\n')
+fp.write(str(int(max_catalog_id)) + '\n')
 fp.close()
 if not os.path.isfile(horizon_file):
-    print("ERROR: User-defined local horizon file ["+horizon_file+"] not found.")
+    print("ERROR: User-defined local horizon file [" + horizon_file + "] not found.")
     exit()
 # -----------------------------------
-latdeg = lat
-if lat > 0.0:
-    declim = lat - 90.0 + altLim
-    print("Target DEC limit > "+str(round(declim, 2)))
+if observer_latitude > 0.0:
+    min_obs_peak_dec = observer_latitude - 90.0 + min_obs_peak_altitude
+    print("Target DEC limit > " + str(round(min_obs_peak_dec, 2)))
 else:
-    declim = lat + 90.0 - altLim
-    print("Target DEC limit < " + str(round(declim, 2)))
-lat = lat * pi / 180.0
-lon = lon * pi / 180.0
-# ------------------------------------------------------------------------------
-# Definitions
-#
-# 0-Frame      Sun Centered, Sun Fixed
-# 1-Frame      Earth Centered, Tilt 23.4 deg rel 0-Frame, Ry = -23.4 deg
-# 2-Frame      Earth Centered, Earth Fixed (rotation+longitude), Rz = wt+lon
-# 3-Frame      Location Centered, at Latitude, Rx = lat
-#  x = West, y = Up, z = North
-# ------------------------------------------------------------------------------
-# Catalogues to Include
-# NGC IC   M  C  B SH2 VdB RCW LDN LBN Cr Mel PGC UGC Ced Arp VV PK PN SNR ACO HCG ESO VdBH DWB TR St Ru VdB-Ha
-#  16 17  18 19 20 21  22  23  24  25  26 28  29  30  31  32  33 34 35  36  37  38  39  40   41 42 43 44   45
-filter_type = ["G", "Gx", "AGx", "rG", "IG", "ClG", "SAB(s)c", "NB", "PN", "DN", "RN", "C+N", "HII", "SNR", "BN", "EN", "GNe"]
+    min_obs_peak_dec = observer_latitude + 90.0 - min_obs_peak_altitude
+    print("Target DEC limit < " + str(round(min_obs_peak_dec, 2)))
+observer_latitude_radians = observer_latitude * pi / 180.0
+observer_longitude_radians = observer_longitude * pi / 180.0
+
 # -----------------------------------------------------------------------------
-Horizon = np.loadtxt(horizon_file, dtype='float', comments='#', delimiter=None, skiprows=0)
+# Set output folder
+RESULTS_FOLDER = "results"
+os.makedirs(RESULTS_FOLDER, exist_ok=True)
+
+# -----------------------------------------------------------------------------
+# Load Horizon Data
+horizon_data = np.loadtxt(horizon_file, dtype='float', comments='#', delimiter=None, skiprows=0)
+
+# Plot Horizon Data
+out_file = f"{RESULTS_FOLDER}/horizon.png"
 fig, axes = plt.subplots(1, 1, figsize=(8, 5))
 axes.set_autoscale_on(False)
-plt.plot(Horizon[:, 0], Horizon[:, 1])
+plt.plot(horizon_data[:, 0], horizon_data[:, 1])
 plt.xlim([0, 360])
 plt.xticks(np.arange(0.0, 390.0, 30.0))
 plt.yticks(np.arange(0.0, 90, 15.0))
 plt.title("Local Horizon", fontsize=16)
 axes.xaxis.set_minor_locator(MultipleLocator(10))
 axes.yaxis.set_minor_locator(MultipleLocator(5))
-plt.grid(b=None, which='both', axis='both', linestyle=':', linewidth=1)
+plt.grid(visible=None, which='both', axis='both', linestyle=':', linewidth=1)
 plt.xlabel("Azimuth (deg)", fontsize=12)
 plt.ylabel("Altitude (deg)", fontsize=12)
-plt.savefig(horizon_file+".png", format='png')
+plt.savefig(out_file, format='png')
 plt.close()
+
 # ------------------------------------------------------------------------------
-fd = open("stellarium_catalog.txt", "rt")
-fi = open("local_catalog_" + str(nMin) + "_" + str(nMax) + ".txt", "wt")
-fo = open("DSO_list_" + str(nMin) + "_" + str(nMax) + ".csv", 'w', newline='')
-csvw = csv.writer(fo, dialect='excel')
-csvw.writerow(['No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day'])
+# Open Files:
+# - Stellarium catalog (input)
+# - Local catalog (output) - a Stellarium formatted file of DSOs that matched filter criteria
+#       > File can later be used in Stellarium to only view DSOs of interest - but something about binary format
+# - DSO List (output) - custom list of DSO objects that matched the filter criteria
+
+STELLARIUM_FILE_NAME = "stellarium_catalog.txt"
+local_catalog_file_name = f"{RESULTS_FOLDER}/local_catalog_{min_catalog_id}_{max_catalog_id}.txt"
+dso_list_file_name = f"{RESULTS_FOLDER}/DSO_list_{min_catalog_id}_{max_catalog_id}.csv"
+
+f_stellarium = open(STELLARIUM_FILE_NAME, "rt")
+f_local_catalog = open(local_catalog_file_name, "wt")
+f_dso_list = open(dso_list_file_name, 'w', newline='')
+
+# ------------------------------------------------------------------------------
+# Create CSV writer for DSO list, and printer header row
+# orbit.dso() as side-effect of writing data to this file, as well as returning a flag indicating if DSO object
+#   should be included in list
+csv_dso_list = csv.writer(f_dso_list, dialect='excel')
+csv_dso_list.writerow(['No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day'])
+
 # -------------------------------------------------------------------------------
-n = 0
-Nstart = nMin
-Nend = nMax
-for s in fd:
-    j = s.find("#")
-    if int(j) != 0:
-        lst = s.split('\t')
-        for i in range(len(lst)):
-            if lst[i] == '':
-                lst[i] = 0
-        if Nstart <= int(lst[0]) <= Nend:
-            dec = float(lst[2])
-            go = False
-            if latdeg > 0.0 and dec > declim:
-                go = True
-            if latdeg <= 0.0 and dec < declim:
-                go = True
-            if not max(float(lst[7]), float(lst[8])) <= min_size and go:
-                if filter_type.count(lst[5]) == 1:
-                    if len(lst) != 45:
-                        print("Stellarium record length not correct: "+str(len(lst)))
-                    if orb.dso(lat, lon, Horizon, lst, filter_type, csvw, hrLim, altLim, altMin) == 1:
-                        fi.write(s)
+# Loop through Stellarium data and process
+R23 = np.array([
+    [1.0, 0.0, 0.0],
+    [0.0, np.cos(observer_latitude_radians), np.sin(observer_latitude_radians)],
+    [0.0, -np.sin(observer_latitude_radians), np.cos(observer_latitude_radians)]
+])
+
+for stellarium_row in f_stellarium:
+    if stellarium_row.startswith("#"):
+        # header row - just write it out as-is
+        # TODO: fix bug - this prints out comment rows in the middle of the data as well as headers
+        f_local_catalog.write(stellarium_row)
     else:
-        fi.write(s)
+        stellarium_row_data = stellarium_row.split('\t')
+        row_id = int(stellarium_row_data[0])
+
+        if len(stellarium_row_data) != constants.stellarium_field_count:
+            print(f"Stellarium record length not correct: {row_id}")
+
+        # Extract data needed from Stellarium data
+        object_dec_degrees = float(stellarium_row_data[2])
+        object_size_major_axis_arcmin = float(stellarium_row_data[7])
+        object_size_minor_axis_arcmin = float(stellarium_row_data[8])
+        object_nominal_size = max(object_size_major_axis_arcmin, object_size_minor_axis_arcmin)
+        object_type = stellarium_row_data[5].strip()
+
+        if row_id < min_catalog_id:
+            continue
+        elif row_id > max_catalog_id:
+            break
+
+        if (
+                object_nominal_size > min_dso_size and
+                object_type in constants.included_dso_types and
+                (
+                        (observer_latitude > 0 and object_dec_degrees > min_obs_peak_dec) or
+                        (observer_latitude <= 0 and object_dec_degrees < min_obs_peak_dec)
+                )
+        ):
+            if simulator.dso(
+                r_23=R23,
+                observer_longitude_radians=observer_longitude_radians,
+                horizon_data=horizon_data,
+                stellarium_row_data=stellarium_row_data,
+                csv_dso_list=csv_dso_list,
+                min_observation_hours=min_observation_hours,
+                min_obs_peak_altitude=min_obs_peak_altitude,
+                min_obs_altitude=min_obs_altitude,
+                results_folder=RESULTS_FOLDER,
+            ) == 1:
+                # write out Stellarium record as is to stellarium local catalog file (for use in Stellarium)
+                f_local_catalog.write(stellarium_row)
+
+# Close all files - no more writing data files
+f_stellarium.close()
+f_local_catalog.close()
+f_dso_list.close()
+
 # -------------------------------------------------------------------------------
-fd.close()
-fi.close()
-fo.close()
-# -------------------------------------------------------------------------------
-targetfile = "DSO_list_" + str(nMin) + "_" + str(nMax) + ".csv"
-fo = open(targetfile, 'r', newline='')
-line = fo.readline()
+f_dso_list = open(dso_list_file_name, 'r', newline='')
+line = f_dso_list.readline()
 ng = 0
 nn = 0
-for line in fo:
-    lst = line.split(',')
-    arr = np.array(lst).reshape(1, 9)
+for line in f_dso_list:
+    stellarium_row_data = line.split(',')
+    arr = np.array(stellarium_row_data).reshape(1, 9)
     if arr[0, 4] == '1':
         if ng == 0:
             gal = arr
@@ -154,10 +209,10 @@ for line in fo:
         else:
             neb = np.vstack((neb, arr))
         nn += 1
-print("Galaxies = "+str(ng)+"    Nebulae = "+str(nn))
+print("Galaxies = " + str(ng) + "    Nebulae = " + str(nn))
 tgal = np.zeros(shape=(ng, 5))
 for i in range(ng):
-    tgal[i, 0] = float(gal[i, 7])+float(gal[i, 8])/32.0  # Month/day
+    tgal[i, 0] = float(gal[i, 7]) + float(gal[i, 8]) / 32.0  # Month/day
     tgal[i, 1] = float(gal[i, 6])  # Score
     tgal[i, 2] = float(gal[i, 2])  # RA
     tgal[i, 3] = float(gal[i, 3])  # DEC
@@ -169,79 +224,97 @@ for i in range(nn):
     tneb[i, 2] = float(neb[i, 2])  # RA
     tneb[i, 3] = float(neb[i, 3])  # DEC
     tneb[i, 4] = float(neb[i, 5])  # size
-fo.close()
+f_dso_list.close()
+
 # -----------------------------------------------------------------------------------
+# Plot Visible_DSOs
+out_file = f"{RESULTS_FOLDER}/Visible_DSOs_{min_catalog_id}-{max_catalog_id}.png"
 fig, axes = plt.subplots(1, 1, figsize=(8, 5))
 axes.set_autoscale_on(False)
-plt.plot(tgal[:, 0], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='', label="Galaxy ("+str(ng)+")")
-plt.plot(tneb[:, 0], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='', label="Nebula ("+str(nn)+")")
+plt.plot(tgal[:, 0], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='',
+         label="Galaxy (" + str(ng) + ")")
+plt.plot(tneb[:, 0], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='',
+         label="Nebula (" + str(nn) + ")")
 plt.xlim([1, 12.9])
 plt.xticks(np.arange(1, 13, 1))
 plt.ylim([0.0, 1.25])
 plt.yticks(np.arange(0, 1.50, 0.25))
 axes.xaxis.set_minor_locator(MultipleLocator(0.25))
 axes.yaxis.set_minor_locator(MultipleLocator(0.05))
-plt.grid(b=None, which='major', axis='both', linestyle=':', linewidth=1)
+plt.grid(visible=None, which='major', axis='both', linestyle=':', linewidth=1)
 plt.legend(loc='best', shadow=True, ncol=1, frameon=True)
 plt.title("Visible Targets", fontsize=16)
 plt.xlabel("Month", fontsize=12)
 plt.ylabel("Imaging Score", fontsize=12)
-plotname = "Visible_DSOs_"+str(nMin)+"-"+str(nMax)+".png"
-plt.savefig(plotname, format='png')
+plt.savefig(out_file, format='png')
 plt.close()
+
 # ----------------------------------
+# Plot Visible_DEC-RA_Map
+out_file = f"{RESULTS_FOLDER}/Visible_DEC-RA_Map_{min_catalog_id}-{max_catalog_id}.png"
 fig, axes = plt.subplots(1, 1, figsize=(8, 5))
 axes.set_autoscale_on(False)
-plt.plot(tgal[:, 2], tgal[:, 3], color='b', marker='8', markeredgecolor="black", linestyle='', label="Galaxy ("+str(ng)+")")
-plt.plot(tneb[:, 2], tneb[:, 3], color='r', marker='v', markeredgecolor="black", linestyle='', label="Nebula ("+str(nn)+")")
+plt.plot(tgal[:, 2], tgal[:, 3], color='b', marker='8', markeredgecolor="black", linestyle='',
+         label="Galaxy (" + str(ng) + ")")
+plt.plot(tneb[:, 2], tneb[:, 3], color='r', marker='v', markeredgecolor="black", linestyle='',
+         label="Nebula (" + str(nn) + ")")
 plt.xlim([0, 360])
 plt.xticks(np.arange(0, 390, 30))
 axes.xaxis.set_minor_locator(MultipleLocator(10))
 plt.ylim([-90.0, 90.0])
 plt.yticks(np.arange(-90.0, 105.0, 15.0))
 axes.yaxis.set_minor_locator(MultipleLocator(5))
-plt.grid(b=None, which='major', axis='both', linestyle=':', linewidth=1)
+plt.grid(visible=None, which='major', axis='both', linestyle=':', linewidth=1)
 plt.legend(loc='best', shadow=True, ncol=1, frameon=True)
 plt.title("Visible DSOs: RA and DEC", fontsize=16)
 plt.xlabel("RA (deg)", fontsize=12)
 plt.ylabel("DEC (deg)", fontsize=12)
-plotname = "Visible_DEC-RA_Map_"+str(nMin)+"-"+str(nMax)+".png"
-plt.savefig(plotname, format='png')
+plt.savefig(out_file, format='png')
 plt.close()
+
 # ----------------------------------
+# Plot Visible_Score-DEC_Map
+out_file = f"{RESULTS_FOLDER}/Visible_Score-DEC_Map_{min_catalog_id}-{max_catalog_id}.png"
 fig, axes = plt.subplots(1, 1, figsize=(8, 5))
 axes.set_autoscale_on(False)
-plt.plot(tgal[:, 3], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='', label="Galaxy ("+str(ng)+")")
-plt.plot(tneb[:, 3], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='', label="Nebula ("+str(nn)+")")
+plt.plot(tgal[:, 3], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='',
+         label="Galaxy (" + str(ng) + ")")
+plt.plot(tneb[:, 3], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='',
+         label="Nebula (" + str(nn) + ")")
 plt.xlim([-90.0, 90.0])
 plt.xticks(np.arange(-90.0, 105.0, 15.0))
 axes.xaxis.set_minor_locator(MultipleLocator(5))
 plt.ylim([0.0, 1.25])
 plt.yticks(np.arange(0, 1.50, 0.25))
 axes.yaxis.set_minor_locator(MultipleLocator(0.05))
-plt.grid(b=None, which='major', axis='both', linestyle=':', linewidth=1)
+plt.grid(visible=None, which='major', axis='both', linestyle=':', linewidth=1)
 plt.legend(loc='best', shadow=True, ncol=1, frameon=True)
 plt.title("Imaging Score VS DSO DEC", fontsize=16)
 plt.xlabel("DEC (deg)", fontsize=12)
 plt.ylabel("Imaging Score", fontsize=12)
-plotname = "Visible_Score-DEC_Map_"+str(nMin)+"-"+str(nMax)+".png"
-plt.savefig(plotname, format='png')
+plt.savefig(out_file, format='png')
 plt.close()
+
 # ----------------------------------
+# Plot Score_vs_Size_Map
+out_file = f"{RESULTS_FOLDER}/Score_vs_Size_Map_{min_catalog_id}-{max_catalog_id}.png"
 fig, axes = plt.subplots(1, 1, figsize=(8, 5))
 axes.set_autoscalex_on(True)
 axes.set_autoscaley_on(False)
-plt.plot(tgal[:, 4], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='', label="Galaxy ("+str(ng)+")")
-plt.plot(tneb[:, 4], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='', label="Nebula ("+str(nn)+")")
+plt.plot(tgal[:, 4], tgal[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='',
+         label="Galaxy (" + str(ng) + ")")
+plt.plot(tneb[:, 4], tneb[:, 1], color='r', marker='v', markeredgecolor="black", linestyle='',
+         label="Nebula (" + str(nn) + ")")
 plt.ylim([0.0, 1.25])
 plt.yticks(np.arange(0, 1.50, 0.25))
 axes.yaxis.set_minor_locator(MultipleLocator(0.05))
-plt.grid(b=None, which='major', axis='both', linestyle=':', linewidth=1)
+plt.grid(visible=None, which='major', axis='both', linestyle=':', linewidth=1)
 plt.legend(loc='best', shadow=True, ncol=1, frameon=True)
 plt.title("Imaging Score VS DSO Size", fontsize=16)
 plt.xlabel("Size (arc-min)", fontsize=12)
 plt.ylabel("Imaging Score", fontsize=12)
-plotname = "Score_vs_Size_Map_"+str(nMin)+"-"+str(nMax)+".png"
-plt.savefig(plotname, format='png')
+plt.savefig(out_file, format='png')
 plt.close()
-exit()
+
+end_counter = perf_counter()
+print(f"Total elapsed: {end_counter - start_counter:.2f}s")
