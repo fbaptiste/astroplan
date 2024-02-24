@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 
-from settings import user
+from models import UserSettings
 
 
-def load_data():
+def load_data(user: UserSettings):
     return np.loadtxt(user.horizon_file, dtype='float', comments='#', delimiter=None, skiprows=0)
 
 
-def plot_data(horizon_data):
+def plot_data(horizon_data, user: UserSettings):
     out_file = f"{user.results_path}/horizon.png"
 
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))

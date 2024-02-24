@@ -1,12 +1,8 @@
-from typing import NamedTuple
-
 import numpy as np
 
 import constants
-import plots
 import utils
-from models import SimResult
-from settings import user
+from models import SimResult, UserSettings
 
 
 def run_dso(
@@ -18,6 +14,7 @@ def run_dso(
     object_dec_radians,
     object_size,
     horizon_data,
+    user: UserSettings
 ) -> SimResult:
     # Initialize internal data
     observer_longitude_radians = user.observer_longitude_radians

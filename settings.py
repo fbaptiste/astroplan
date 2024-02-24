@@ -4,12 +4,12 @@ from math import pi
 
 import numpy as np
 
-from constants import settings_file
+from constants import default_ini_file
 from models import UserSettings
 from utils import create_dir
 
 
-def read_settings(file: str = settings_file) -> UserSettings:
+def read_settings(file: str = default_ini_file) -> UserSettings:
     config = configparser.ConfigParser()
     config.read(file)
 
@@ -85,6 +85,3 @@ def build_catalog_id_range(min_id, max_id):
         return f"{min_id}-{max_id}"
     else:
         return f"{min_id}-end"
-
-
-user = read_settings()

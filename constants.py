@@ -4,12 +4,11 @@ from math import pi
 import numpy as np
 
 # App Settings
-settings_file = "./astroplan.ini"
+default_ini_file = "astroplan.ini"
 
 # Stellarium data
 stellarium_field_count = 45
 
-# HAS to be a list because code later uses index of elements to determine if galaxy or nebula - change this
 included_dso_types_galaxies = {
     "G",
     "Gx",
@@ -59,7 +58,3 @@ r_01 = np.array([
 
 # Constants associated with simulation
 simulation_delta_t_hours = 7.0/60.0  # Simulation time step in hours
-
-
-# Constants associated with outputs
-dso_csv_headers = ['No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day']

@@ -1,35 +1,29 @@
 """Various data structures"""
 from typing import NamedTuple
-from collections import namedtuple
 
 import numpy as np
 
 
-UserSettings = namedtuple(
-    'UserSettings',
-    [
-        "observer_latitude",
-        "observer_longitude",
-        "observer_latitude_radians",
-        "observer_longitude_radians",
-        "horizon_file",
-        "min_obs_hours",
-        "min_obs_peak_altitude",
-        "min_obs_peak_dec",
-        "min_obs_altitude",
-        "min_dso_size",
-        "catalog_file",
-        "min_catalog_id",
-        "max_catalog_id",
-        "catalog_id_range",
-        "results_path",
-        "clear_results_before_running",
-
-        "local_catalog_file",
-        "dso_list_file",
-        "r_23",
-    ]
-)
+class UserSettings(NamedTuple):
+    observer_latitude: float
+    observer_longitude: float
+    observer_latitude_radians: float
+    observer_longitude_radians: float
+    horizon_file: str
+    min_obs_hours: float
+    min_obs_peak_altitude: float
+    min_obs_peak_dec: float
+    min_obs_altitude: float
+    min_dso_size: float
+    catalog_file: str
+    min_catalog_id: int
+    max_catalog_id: int
+    catalog_id_range: str
+    results_path: str
+    clear_results_before_running: bool
+    local_catalog_file: str
+    dso_list_file: str
+    r_23: np.ndarray
 
 
 class SimResult(NamedTuple):
@@ -47,7 +41,7 @@ class SimResult(NamedTuple):
 
     @property
     def csv_row(self):
-        return [
+        return (
             self.catalog_id,
             self.catalog_name,
             round(self.ra_radians, 4),
@@ -57,4 +51,8 @@ class SimResult(NamedTuple):
             round(self.max_score, 2),
             self.max_month,
             self.max_day,
-        ]
+        )
+
+    @classmethod
+    def csv_row_headers(cls):
+        return 'No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day'
