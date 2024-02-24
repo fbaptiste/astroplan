@@ -11,9 +11,14 @@ Fork of James Lamb's Python AstroPlan
 - "Darkness" is when Sun's altitude at Lat, Lon < -12 deg
 - All distances are small compared with distance to a DSO
 
+## Where to get the latest Stellarium DSO Catalog
+It is available in text format on their [github repo](https://github.com/Stellarium/stellarium/tree/master).
+
+Specifically the file is [here](https://github.com/Stellarium/stellarium/blob/master/nebulae/default/catalog.txt).
+
 ## Current Timings
-2000 objects -> 4s
-100,000 objects -> 175s
+- 2000 objects -> 4s
+- all objects -> 175s
 
 ## Sample Run Console Output
 ```text
