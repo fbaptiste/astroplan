@@ -138,8 +138,8 @@ def generate_dso_plots(dso_results, user: UserSettings):
     for dso_result in dso_results:
         plots.plot_dso(
             catalog_name=dso_result.catalog_name,
-            month=dso_result.max_month,
-            day=dso_result.max_day,
+            max_score_month=dso_result.max_month,
+            max_score_day=dso_result.max_day,
             time_series=dso_result.time_series,
             user=user,
         )

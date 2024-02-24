@@ -1,7 +1,7 @@
 """Function to generate various Plots"""
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
 import numpy as np
+from matplotlib.ticker import MultipleLocator
 
 from models import UserSettings
 
@@ -144,7 +144,7 @@ def generate_global_plots(user: UserSettings):
     plot_score_vs_size_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas, user)
 
 
-def plot_dso(catalog_name, month, day, time_series, user: UserSettings):
+def plot_dso(catalog_name, max_score_month, max_score_day, time_series, user: UserSettings):
     out_file = f"{user.results_path}/{catalog_name}.png"
 
     plt.figure(figsize=(8, 8), facecolor=(1.0, 0.8, 0.2))
@@ -170,7 +170,9 @@ def plot_dso(catalog_name, month, day, time_series, user: UserSettings):
     plt.plot(time_series[:, 0], time_series[:, 2], 'r', linewidth=1, label='Max Alt')
     plt.plot(time_series[:, 0], time_series[:, 1], 'g', linewidth=1, label='Min Alt')
     plt.legend(loc='best', shadow=True, ncol=1, frameon=True)
-    plot_title = f"{catalog_name}: Score = {round(max(time_series[:, 4]), 2)} on {int(month)}/{int(day)}"
+
+    max_score = round(max(time_series[:, 4]), 2)
+    plot_title = f"{catalog_name}: Score = {max_score} on {int(max_score_month)}/{int(max_score_day)}"
     plt.title(plot_title, fontsize=16)
 
     plt.savefig(out_file, format='png')
