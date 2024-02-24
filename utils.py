@@ -2,6 +2,7 @@
 import os
 import shutil
 from math import pi
+from time import perf_counter
 
 import numpy as np
 
@@ -127,4 +128,7 @@ def catalog_info(stellarium_row_data):
     return catalog_name, is_galaxy
 
 
+def print_elapsed_time(name, start_time):
+    end_time = perf_counter()
+    print(f"{name}: {(end_time - start_time):.2f} s")
 

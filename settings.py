@@ -22,7 +22,12 @@ def read_settings(file: str = settings_file) -> UserSettings:
     observer_longitude = float(observer["Longitude"])
     min_obs_peak_altitude = float(filters["MinObservationPeakAltitude"])
     min_catalog_id = int(catalog["MinCatalogIndex"])
-    max_catalog_id = int(catalog["MaxCatalogIndex"])
+
+    try:
+        max_catalog_id = int(catalog["MaxCatalogIndex"])
+    except ValueError:
+        max_catalog_id = None
+
     results_path = output["Results"]
 
     observer_latitude_radians = observer_latitude * pi / 180.0
@@ -33,6 +38,7 @@ def read_settings(file: str = settings_file) -> UserSettings:
     else:
         min_obs_peak_dec = observer_latitude + 90.0 - min_obs_peak_altitude
 
+    catalog_id_range = build_catalog_id_range(min_catalog_id, max_catalog_id)
     local_catalog_file = f"{results_path}/local_catalog_{min_catalog_id}-{max_catalog_id}.txt"
     dso_list_file = f"{results_path}/DSO_list_{min_catalog_id}-{max_catalog_id}.csv"
 
@@ -58,6 +64,7 @@ def read_settings(file: str = settings_file) -> UserSettings:
         catalog_file=catalog["CatalogFile"].strip(),
         min_catalog_id=min_catalog_id,
         max_catalog_id=max_catalog_id,
+        catalog_id_range=catalog_id_range,
 
         results_path=results_path,
         clear_results_before_running=output.getboolean("ClearResultsBeforeRunning"),
@@ -71,6 +78,13 @@ def read_settings(file: str = settings_file) -> UserSettings:
     create_dir(settings.results_path, settings.clear_results_before_running)
 
     return settings
+
+
+def build_catalog_id_range(min_id, max_id):
+    if max_id is not None:
+        return f"{min_id}-{max_id}"
+    else:
+        return f"{min_id}-end"
 
 
 user = read_settings()

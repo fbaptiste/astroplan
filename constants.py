@@ -59,3 +59,7 @@ r_01 = np.array([
 
 # Constants associated with simulation
 simulation_delta_t_hours = 7.0/60.0  # Simulation time step in hours
+
+
+# Constants associated with outputs
+dso_csv_headers = ['No.', 'Name', 'RA (deg)', 'DEC (deg)', 'Type', 'Size', 'Score', 'Month', 'Day']

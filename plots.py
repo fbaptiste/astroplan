@@ -6,7 +6,8 @@ import numpy as np
 from settings import user
 
 
-def get_dso_timeseries():
+
+def make_dso_timeseries():
     with open(user.dso_list_file, "r") as f:
         # skip header row
         next(f)
@@ -28,7 +29,6 @@ def get_dso_timeseries():
                 else:
                     nebula = np.vstack((nebula, arr))
                 num_nebulas += 1
-        print("Galaxies = " + str(num_galaxies) + "    Nebulae = " + str(num_nebulas))
         ts_galaxies = np.zeros(shape=(num_galaxies, 5))
         for i in range(num_galaxies):
             ts_galaxies[i, 0] = float(galaxy[i, 7]) + float(galaxy[i, 8]) / 32.0  # Month/day
@@ -48,7 +48,7 @@ def get_dso_timeseries():
 
 
 def plot_visible_dsos(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
-    out_file = f"{user.results_path}/Visible_DSOs_{user.min_catalog_id}-{user.max_catalog_id}.png"
+    out_file = f"{user.results_path}/Visible_DSOs_{user.catalog_id_range}.png"
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))
     axes.set_autoscale_on(False)
     plt.plot(ts_galaxies[:, 0], ts_galaxies[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='',
@@ -71,7 +71,7 @@ def plot_visible_dsos(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
 
 
 def plot_visible_dec_ra_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
-    out_file = f"{user.results_path}/Visible_DEC-RA_Map_{user.min_catalog_id}-{user.max_catalog_id}.png"
+    out_file = f"{user.results_path}/Visible_DEC-RA_Map_{user.catalog_id_range}.png"
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))
     axes.set_autoscale_on(False)
     plt.plot(ts_galaxies[:, 2], ts_galaxies[:, 3], color='b', marker='8', markeredgecolor="black", linestyle='',
@@ -94,7 +94,7 @@ def plot_visible_dec_ra_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
 
 
 def plot_visible_score_dec_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
-    out_file = f"{user.results_path}/Visible_Score-DEC_Map_{user.min_catalog_id}-{user.max_catalog_id}.png"
+    out_file = f"{user.results_path}/Visible_Score-DEC_Map_{user.catalog_id_range}.png"
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))
     axes.set_autoscale_on(False)
     plt.plot(ts_galaxies[:, 3], ts_galaxies[:, 1], color='b', marker='8', markeredgecolor="black", linestyle='',
@@ -117,7 +117,7 @@ def plot_visible_score_dec_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebula
 
 
 def plot_score_vs_size_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
-    out_file = f"{user.results_path}/Score_vs_Size_Map_{user.min_catalog_id}-{user.max_catalog_id}.png"
+    out_file = f"{user.results_path}/Score_vs_Size_Map_{user.catalog_id_range}.png"
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))
     axes.set_autoscalex_on(True)
     axes.set_autoscaley_on(False)
@@ -138,7 +138,7 @@ def plot_score_vs_size_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas):
 
 
 def generate_global_plots():
-    num_galaxies, num_nebulas, ts_galaxies, ts_nebulas = get_dso_timeseries()
+    num_galaxies, num_nebulas, ts_galaxies, ts_nebulas = make_dso_timeseries()
     plot_visible_dsos(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas)
     plot_visible_dec_ra_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas)
     plot_visible_score_dec_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas)

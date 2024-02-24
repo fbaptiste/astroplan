@@ -1,13 +1,15 @@
+from typing import NamedTuple
+
 import numpy as np
 
 import constants
 import plots
 import utils
-
+from models import SimResult
 from settings import user
 
 
-def dso(
+def run_dso(
     *,
     row_id,
     catalog_name,
@@ -16,8 +18,7 @@ def dso(
     object_dec_radians,
     object_size,
     horizon_data,
-    csv_output_file,
-):
+) -> SimResult:
     # Initialize internal data
     observer_longitude_radians = user.observer_longitude_radians
     min_obs_hours = user.min_obs_hours,
@@ -97,9 +98,27 @@ def dso(
             )
 
     if max(time_series[:, 2]) < min_obs_peak_altitude or max(time_series[:, 3]) < min_obs_hours:
-        return False  # Cannot see DSO (not high enough and/or not visible for long enough
+        return SimResult(is_included=False)  # Cannot see DSO (not high enough and/or not visible for long enough
 
     # Find first day when imaging score is maximum
+    max_month, max_day, max_score = calc_first_max_info(time_series)
+
+    return SimResult(
+        is_included=True,
+        catalog_id=row_id,
+        catalog_name=catalog_name,
+        is_galaxy=is_galaxy,
+        ra_radians=object_ra_radians,
+        dec_radians=object_dec_radians,
+        size=object_size,
+        max_score=max_score,
+        max_month=max_month,
+        max_day=max_day,
+        time_series=time_series
+    )
+
+
+def calc_first_max_info(time_series):
     max_score = 0.97 * max(time_series[:, 4])  # Use 0.97 to avoid small numerical fluctuation error
     kk = 0
     if time_series[0, 4] < max_score:
@@ -114,30 +133,8 @@ def dso(
         kk += 1
         kk = min(max(0, kk), 364)
     kk = min(max(0, kk), 364)
-    mo = int(time_series[kk, 0])
-    da = max(int((time_series[kk, 0] - float(mo)) * 31.0), 1)
+    max_month = int(time_series[kk, 0])
+    max_day = max(int((time_series[kk, 0] - float(max_month)) * 31.0), 1)
 
     max_score = max(time_series[:, 4])
-    row = [
-        str(row_id),
-        catalog_name,
-        round(object_ra_radians, 4),
-        round(object_dec_radians, 4),
-        int(is_galaxy),
-        round(object_size, 2),
-        round(max_score, 2),
-        int(mo),
-        int(da)
-    ]
-    csv_output_file.writerow(row)
-
-    plots.plot_dso(catalog_name=catalog_name, month=mo, day=da, time_series=time_series)
-
-    print(f"{row_id} - {catalog_name} : Complete")
-
-    # TODO: figure out what this is...
-    # fdd.write(target_name)
-    # for i in range(num_days_in_year):
-    #     fdd.write(", "+str(round(time_series[i, 3], 2)))
-    # fdd.write('\n')
-    return True
+    return max_month, max_day, max_score
