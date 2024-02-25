@@ -1,5 +1,5 @@
 import csv
-from math import pi
+import math
 from multiprocessing import Pool
 from time import perf_counter
 
@@ -17,10 +17,6 @@ def main(user: UserSettings):
         horizon_data, user=user
     )
     utils.print_elapsed_time("\tSimulations completed", start_time)
-
-    print("\tIdentified:")
-    print(f"\t\t- Galaxies: {num_galaxies}")
-    print(f"\t\t- Nebulas: {num_nebulas}")
 
     print("\tGenerating outputs:")
     start_time = perf_counter()
@@ -48,6 +44,10 @@ def main(user: UserSettings):
     plots.generate_global_plots(user=user)
     utils.print_elapsed_time("\t\t- Global plots", start_time)
 
+    print("\tIdentified:")
+    print(f"\t\t- Galaxies: {num_galaxies}")
+    print(f"\t\t- Nebulas: {num_nebulas}")
+
 
 def run_simulations(horizon_data, user: UserSettings):
     stellarium_headers = []
@@ -68,10 +68,10 @@ def run_simulations(horizon_data, user: UserSettings):
                 catalog_id = int(stellarium_row_data[0])
 
                 # Extract needed Stellarium data
+                object_ra_degrees = float(stellarium_row_data[1])
                 object_dec_degrees = float(stellarium_row_data[2])
-                object_ra_degrees = float(stellarium_row_data[2])
-                object_ra_radians = object_ra_degrees * pi / 180.0
-                object_dec_radians = object_dec_degrees * pi / 180.0
+                object_ra_radians = math.radians(object_ra_degrees)
+                object_dec_radians = math.radians(object_dec_degrees)
 
                 object_size_major_axis_arcmin = float(stellarium_row_data[7])
                 object_size_minor_axis_arcmin = float(stellarium_row_data[8])

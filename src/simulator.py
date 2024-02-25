@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from src import constants, utils
@@ -99,8 +101,8 @@ def run_dso(args: SimJobArgs) -> SimResult:
         catalog_id=catalog_id,
         catalog_name=catalog_name,
         is_galaxy=is_galaxy,
-        ra_radians=object_ra_radians,
-        dec_radians=object_dec_radians,
+        ra_degrees=math.degrees(object_ra_radians),
+        dec_degrees=math.degrees(object_dec_radians),
         size=object_size,
         max_score=max_score,
         max_month=max_month,

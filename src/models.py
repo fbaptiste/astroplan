@@ -84,8 +84,8 @@ class SimResult(NamedTuple):
     catalog_id: int | None = None
     catalog_name: str | None = None
     is_galaxy: bool = False
-    ra_radians: float | None = None
-    dec_radians: float | None = None
+    ra_degrees: float | None = None
+    dec_degrees: float | None = None
     size: float | None = None
     max_score: float | None = None
     max_month: int | None = None
@@ -97,8 +97,8 @@ class SimResult(NamedTuple):
         return (
             self.catalog_id,
             self.catalog_name,
-            round(self.ra_radians, 4),
-            round(self.dec_radians, 4),
+            round(self.ra_degrees, 4),
+            round(self.dec_degrees, 4),
             int(self.is_galaxy),
             round(self.size, 2),
             round(self.max_score, 2),
