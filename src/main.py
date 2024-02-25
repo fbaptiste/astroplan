@@ -1,9 +1,10 @@
 import csv
 from math import pi
+from multiprocessing import Pool
 from time import perf_counter
 
 from src import constants, horizon, plots, simulator, utils
-from src.models import SimResult, UserSettings
+from src.models import DSOPlotArgs, SimJobArgs, SimResult, UserSettings
 
 
 def main(user: UserSettings):
@@ -11,6 +12,7 @@ def main(user: UserSettings):
     print(f"\tLimiting Stellarium catalog: {user.catalog_id_range}")
     print("\tRunning simulations:")
     horizon_data = horizon.load_data(user=user)
+
     stellarium_headers, local_catalog_results, dso_results, num_galaxies, num_nebulas = run_simulations(
         horizon_data, user=user
     )
@@ -32,8 +34,9 @@ def main(user: UserSettings):
 
     # Generate individual DSO plots
     start_time = perf_counter()
+    print("\t\tGenerating DSO plots:")
     generate_dso_plots(dso_results, user=user)
-    utils.print_elapsed_time("\t\t- DSO plots", start_time)
+    utils.print_elapsed_time("\t\t\tDSO Plots completed", start_time)
 
     # Generate Horizon plot
     start_time = perf_counter()
@@ -51,6 +54,8 @@ def run_simulations(horizon_data, user: UserSettings):
     local_catalog_results = []
     dso_results = []
 
+    sim_jobs = []
+
     reached_stellarium_data = False
     with open(user.catalog_file) as f_stellarium:
         for stellarium_row in f_stellarium:
@@ -60,7 +65,7 @@ def run_simulations(horizon_data, user: UserSettings):
             else:
                 reached_stellarium_data = True
                 stellarium_row_data = stellarium_row.split("\t")
-                row_id = int(stellarium_row_data[0])
+                catalog_id = int(stellarium_row_data[0])
 
                 # Extract needed Stellarium data
                 object_dec_degrees = float(stellarium_row_data[2])
@@ -73,9 +78,9 @@ def run_simulations(horizon_data, user: UserSettings):
                 object_max_size = max(object_size_major_axis_arcmin, object_size_minor_axis_arcmin)
                 object_type = stellarium_row_data[5].strip()
 
-                if row_id < user.min_catalog_id:
+                if catalog_id < user.min_catalog_id:
                     continue
-                elif user.max_catalog_id is not None and row_id > user.max_catalog_id:
+                elif user.max_catalog_id is not None and catalog_id > user.max_catalog_id:
                     break
 
                 if (
@@ -91,20 +96,26 @@ def run_simulations(horizon_data, user: UserSettings):
                         # Either not in desired catalog, or not in DSO types of interest
                         continue
 
-                    result = simulator.run_dso(
-                        row_id=row_id,
-                        catalog_name=catalog_name,
-                        is_galaxy=is_galaxy,
-                        object_ra_radians=object_ra_radians,
-                        object_dec_radians=object_dec_radians,
-                        object_size=object_max_size,
-                        horizon_data=horizon_data,
-                        user=user,
+                    sim_jobs.append(
+                        SimJobArgs(
+                            catalog_id,
+                            catalog_name,
+                            is_galaxy,
+                            object_ra_radians,
+                            object_dec_radians,
+                            object_max_size,
+                            horizon_data,
+                            user,
+                        )
                     )
-                    if result.is_included:
-                        dso_results.append(result)
-                        local_catalog_results.append(stellarium_row)
-                        print(f"\t\t- ({result.catalog_id}) {result.catalog_name}")
+
+    with Pool(processes=user.pool_size) as pool:
+        all_results = pool.map(simulator.run_dso, sim_jobs)
+
+    for result in all_results:
+        if result.is_included:
+            dso_results.append(result)
+            local_catalog_results.append(stellarium_row)
 
     num_galaxies = sum(1 for r in dso_results if r.is_galaxy)
     num_nebulas = len(dso_results) - num_galaxies
@@ -129,11 +140,15 @@ def generate_file_outputs(stellarium_headers, local_catalog_results, dso_results
 
 
 def generate_dso_plots(dso_results, user: UserSettings):
-    for dso_result in dso_results:
-        plots.plot_dso(
+    jobs = [
+        DSOPlotArgs(
             catalog_name=dso_result.catalog_name,
             max_score_month=dso_result.max_month,
             max_score_day=dso_result.max_day,
             time_series=dso_result.time_series,
             user=user,
         )
+        for dso_result in dso_results
+    ]
+    with Pool(processes=user.pool_size) as pool:
+        pool.map(plots.plot_dso, jobs)

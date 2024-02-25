@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 
-from src.models import UserSettings
+from src.models import DSOPlotArgs, UserSettings
 
 
 def make_dso_timeseries(user: UserSettings):
@@ -201,8 +201,14 @@ def generate_global_plots(user: UserSettings):
     plot_score_vs_size_map(num_galaxies, num_nebulas, ts_galaxies, ts_nebulas, user)
 
 
-def plot_dso(catalog_name, max_score_month, max_score_day, time_series, user: UserSettings):
+def plot_dso(args: DSOPlotArgs):
+    catalog_name = args.catalog_name
+    max_score_month = args.max_score_month
+    max_score_day = args.max_score_day
+    time_series = args.time_series
+    user = args.user
     out_file = f"{user.results_path}/{catalog_name}.png"
+    print(f"\t\t\t- {catalog_name}")
 
     plt.figure(figsize=(8, 8), facecolor=(1.0, 0.8, 0.2))
     ax2 = plt.subplot2grid((3, 1), (1, 0), rowspan=2)

@@ -25,7 +25,7 @@ class UserSettings:
     max_catalog_id: int | None
     results_path: Path
     clear_results_before_running: bool
-    _max_catalog_id: int = None
+    pool_size: int
 
     @cached_property
     def observer_latitude_radians(self) -> float:
@@ -68,6 +68,17 @@ class UserSettings:
         return f"{self.results_path}/DSO_list_{self.min_catalog_id}-{self.max_catalog_id}.csv"
 
 
+class SimJobArgs(NamedTuple):
+    catalog_id: int
+    catalog_name: str
+    is_galaxy: bool
+    object_ra_radians: float
+    object_dec_radians: float
+    object_size: float
+    horizon_data: np.ndarray
+    user: UserSettings
+
+
 class SimResult(NamedTuple):
     is_included: bool = False
     catalog_id: int | None = None
@@ -98,3 +109,11 @@ class SimResult(NamedTuple):
     @classmethod
     def csv_row_headers(cls):
         return "No.", "Name", "RA (deg)", "DEC (deg)", "Type", "Size", "Score", "Month", "Day"
+
+
+class DSOPlotArgs(NamedTuple):
+    catalog_name: str
+    max_score_month: int
+    max_score_day: int
+    time_series: np.ndarray
+    user: UserSettings

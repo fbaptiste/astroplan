@@ -1,20 +1,20 @@
 import numpy as np
 
 from src import constants, utils
-from src.models import SimResult, UserSettings
+from src.models import SimJobArgs, SimResult, UserSettings
 
 
-def run_dso(
-    *,
-    row_id,
-    catalog_name,
-    is_galaxy,
-    object_ra_radians,
-    object_dec_radians,
-    object_size,
-    horizon_data,
-    user: UserSettings,
-) -> SimResult:
+def run_dso(args: SimJobArgs) -> SimResult:
+    catalog_id = args.catalog_id
+    catalog_name = args.catalog_name
+    is_galaxy = args.is_galaxy
+    object_ra_radians = args.object_ra_radians
+    object_dec_radians = args.object_dec_radians
+    object_size = args.object_size
+    horizon_data = args.horizon_data
+    user = args.user
+    print(f"\t\t- ({catalog_id}) {catalog_name}")
+
     # Initialize internal data
     observer_longitude_radians = user.observer_longitude_radians
     min_obs_hours = (user.min_obs_hours,)
@@ -96,7 +96,7 @@ def run_dso(
 
     return SimResult(
         is_included=True,
-        catalog_id=row_id,
+        catalog_id=catalog_id,
         catalog_name=catalog_name,
         is_galaxy=is_galaxy,
         ra_radians=object_ra_radians,

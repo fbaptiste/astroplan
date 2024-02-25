@@ -17,6 +17,7 @@ def read_settings(file: str = default_ini_file) -> UserSettings:
     filters = config["Filters"]
     catalog = config["Catalog"]
     output = config["Output"]
+    parallelism = config["Parallelism"]
 
     try:
         max_catalog_id = int(catalog["MaxCatalogIndex"])
@@ -38,6 +39,7 @@ def read_settings(file: str = default_ini_file) -> UserSettings:
         max_catalog_id=max_catalog_id,
         results_path=root_path.joinpath(output["Results"]),
         clear_results_before_running=output.getboolean("ClearResultsBeforeRunning"),
+        pool_size=int(parallelism["MaxParallelJobs"]),
     )
 
     create_dir(settings.results_path, settings.clear_results_before_running)
