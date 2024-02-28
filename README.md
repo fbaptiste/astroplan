@@ -1,6 +1,8 @@
 # AstroPlan
 
-Fork of James Lamb's Python AstroPlan
+Based on James Lamb's Astroplan software detailed on his YouTube channel: 
+[https://www.youtube.com/@Aero19612](https://www.youtube.com/@Aero19612).
+
 
 ## Assumptions
 
@@ -11,11 +13,13 @@ Fork of James Lamb's Python AstroPlan
 - "Darkness" is when Sun's altitude at Lat, Lon < -12 deg
 - All distances are small compared with distance to a DSO
 
+
 ## Where to get the latest Stellarium DSO Catalog
 
-It is available in text format on their [GitHub repo](https://github.com/Stellarium/stellarium/tree/master).
+It is available in text format in their [GitHub repo](https://github.com/Stellarium/stellarium/tree/master).
 
 Specifically the file is [here](https://github.com/Stellarium/stellarium/blob/master/nebulae/default/catalog.txt).
+
 
 ## Run Configurations
 
@@ -63,6 +67,7 @@ MaxParallelJobs = 6
 Results = ./results2
 ClearResultsBeforeRunning = yes
 ```
+
 
 ### Parallelism
 

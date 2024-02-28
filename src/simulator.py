@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 from src import constants, utils
-from src.models import SimJobArgs, SimResult, UserSettings
+from src.models import SimJobArgs, SimResult
 
 
 def run_dso(args: SimJobArgs) -> SimResult:

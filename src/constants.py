@@ -22,6 +22,7 @@ included_dso_types_galaxies = {
 included_dso_types_nebulas = {"NB", "PN", "DN", "RN", "C+N", "HII", "SNR", "BN", "EN", "GNe"}
 included_dso_types = included_dso_types_galaxies | included_dso_types_nebulas
 
+# Add or remove catalogs (and their corresponding column in the Stellarium data file)
 catalogs = {
     "M": 18,
     "SH2": 21,
